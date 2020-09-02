@@ -5,6 +5,8 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const jwt = require("express-jwt");
 const jwksRsa = require("jwks-rsa");
+const axios = require('axios').default
+
 const authConfig = require("./auth_config.json");
 
 const app = express();
@@ -44,10 +46,37 @@ app.get("/api/external", checkJwt, (req, res) => {
   }
   else {
     res.send({
-      msg: "One large pizza coming your way!"
+      msg: req.user
     });
   }
 
 });
+app.get('/google-login-count', checkJwt, async(req, res) => {
+  try {
+    const tokenOptions = { 
+      method: 'POST',
+      url: 'https://dev-gwlo8d17.auth0.com/oauth/token',
+      headers: { 'content-type': 'application/json' },
+      data: {
+        client_id:process.env.CLIENT_ID,
+        client_secret:process.env.CLIENT_SECRET,
+        audience:"https://dev-gwlo8d17.auth0.com/api/v2/",
+        grant_type:"client_credentials"
+      }
+    };
+    const {access_token, token_type} = (await axios(tokenOptions)).data
 
+    const userInfoOptions = {
+      method: 'GET',
+      url: `https://${process.env.DOMAIN}/api/v2/users/USER_ID`,
+      headers: {authorization: `${token_type} ${access_token}`}
+    };
+    
+  }
+  catch(err) {
+    res.send({
+      msg: err
+    })
+  }
+})
 app.listen(port, () => console.log(`API Server listening on port ${port}`));
