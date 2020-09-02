@@ -37,9 +37,17 @@ const checkJwt = jwt({
 });
 
 app.get("/api/external", checkJwt, (req, res) => {
-  res.send({
-    msg: req.user
-  });
+  if(!req.user['https://pizza42.com/email_verified']) {
+    res.send({
+      msg: "Sorry, but you need to verify your email before proceeding"
+    })
+  }
+  else {
+    res.send({
+      msg: "One large pizza coming your way!"
+    });
+  }
+
 });
 
 app.listen(port, () => console.log(`API Server listening on port ${port}`));
