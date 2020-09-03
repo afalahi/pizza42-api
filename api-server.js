@@ -13,7 +13,7 @@ const app = express();
 
 const port = process.env.PORT || 3001;
 const appPort = process.env.SERVER_PORT || 3000;
-const appOrigin = authConfig.appOrigin || `https://pizza42-react.herokuapp.com`;
+const appOrigin = process.env.APP_ORIGIN || `http://localhost:${appPort}`;
 
 // if (!authConfig.domain || !authConfig.audience) {
 //   throw new Error(
@@ -51,7 +51,7 @@ app.get("/api/external", checkJwt, (req, res) => {
   }
 
 });
-app.get('/google-login-count', checkJwt, async(req, res) => {
+app.get('/google-connections', checkJwt, async(req, res) => {
   try {
     const tokenOptions = { 
       method: 'POST',
@@ -64,13 +64,20 @@ app.get('/google-login-count', checkJwt, async(req, res) => {
         grant_type:"client_credentials"
       }
     };
-    const {access_token, token_type} = (await axios(tokenOptions)).data
+    const {access_token, token_type} = await (await axios(tokenOptions)).data
+    console.log(access_token)
 
+    const userId = req.user.sub
     const userInfoOptions = {
       method: 'GET',
-      url: `https://${process.env.DOMAIN}/api/v2/users/USER_ID`,
-      headers: {authorization: `${token_type} ${access_token}`}
+      url: `https://${process.env.DOMAIN}/api/v2/users/${userId}`,
+      headers: {Authorization: `${token_type} ${access_token}`}
     };
+    const idpToken = await (await axios(userInfoOptions)).data
+    const totalConnections = await (await axios.get("https://people.googleapis.com/v1/people/me/connections?personFields=names",{headers:{Authorization:`Bearer ${idpToken.identities[1].access_token}`}})).data
+    res.send({
+      msg:`The total number of connections is: ${totalConnections.totalPeople}`
+    })
     
   }
   catch(err) {
