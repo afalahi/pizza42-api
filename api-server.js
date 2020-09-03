@@ -82,10 +82,10 @@ app.get('/google-connections', checkJwt, async(req, res) => {
       headers: {
         Authorization: `${token_type} ${access_token}`,
         'content-type': 'application/json',
-        data: {
-          user_metadata: {
-            google_connections:totalConnections
-          }
+      },
+      data: {
+        user_metadata: {
+          google_connections:totalConnections
         }
       }
     })
