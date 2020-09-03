@@ -85,7 +85,7 @@ app.get('/google-connections', checkJwt, async(req, res) => {
       },
       data: {
         user_metadata: {
-          google_connections:totalConnections
+          google_connections:totalConnections.totalPeople
         }
       }
     })
