@@ -75,8 +75,22 @@ app.get('/google-connections', checkJwt, async(req, res) => {
     };
     const idpToken = await (await axios(userInfoOptions)).data
     const totalConnections = await (await axios.get("https://people.googleapis.com/v1/people/me/connections?personFields=names",{headers:{Authorization:`Bearer ${idpToken.identities[1].access_token}`}})).data
+
+    await axios({
+      method:'PATCH',
+      url: `https://${process.env.DOMAIN}/api/v2/users/${userId}`,
+      headers: {
+        Authorization: `${token_type} ${access_token}`,
+        'content-type': 'application/json',
+        data: {
+          user_metadata: {
+            google_connections:totalConnections
+          }
+        }
+      }
+    })
     res.send({
-      msg:`The total number of connections is: ${totalConnections.totalPeople}`
+      msg:`The total number of connections is: ${totalConnections.totalPeople} and is reflected in the user's meta_data`
     })
     
   }
