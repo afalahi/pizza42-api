@@ -46,7 +46,7 @@ app.get("/api/external", checkJwt, (req, res) => {
   }
   else {
     res.send({
-      msg: req.user
+      msg: "One large pizza coming your way!"
     });
   }
 
